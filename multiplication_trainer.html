@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Skoolyst - Multiplication Trainer</title>
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.container {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  max-width: 900px;
+  width: 100%;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.header p {
+  margin: 5px 0 0;
+  color: #7f8c8d;
+  font-size: 16px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: 40px;
+  align-items: start;
+}
+
+.mainArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .rightPanel {
+    order: -1;
+  }
+}
+
+.rightPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: sticky;
+  top: 20px;
+}
+
+.timerContainer {
+  width: 200px;
+  height: 200px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.timerNumber {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 72px;
+  font-weight: 900;
+  color: #2c3e50;
+  transition: color 0.3s;
+}
+
+.timerNumber.warning {
+  color: #e74c3c;
+  animation: pulse 0.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+#progress {
+  font-size: 42px;
+  font-weight: 900;
+  color: #2c3e50;
+}
+
+.scoreBar {
+  width: 100%;
+  height: 8px;
+  background: #ecf0f1;
+  border-radius: 4px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.scoreProgress {
+  height: 100%;
+  background: linear-gradient(90deg, #9ff527 0%, #6dd400 100%);
+  width: 0%;
+  transition: width 0.3s;
+}
+
+#question {
+  font-size: 84px;
+  font-weight: 900;
+  margin: 20px 0;
+  text-align: center;
+  color: #2c3e50;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#answer {
+  font-size: 42px;
+  height: 75px;
+  margin: 25px auto;
+  text-align: center;
+  display: block;
+  width: 220px;
+  border: 3px solid #3498db;
+  border-radius: 12px;
+  padding: 10px;
+  font-weight: 600;
+  color: #2c3e50;
+  transition: all 0.3s;
+}
+
+#answer:focus {
+  outline: none;
+  border-color: #9ff527;
+  box-shadow: 0 0 0 4px rgba(159, 245, 39, 0.2);
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+button {
+  font-size: 28px;
+  height: 90px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #9ff527 0%, #7dd400 100%);
+  color: #2c3e50;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(159, 245, 39, 0.3);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(159, 245, 39, 0.4);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button.action {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+button.action:hover {
+  box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+}
+
+#result {
+  font-size: 36px;
+  margin-top: 40px;
+  text-align: center;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.finalScore {
+  background: linear-gradient(135deg, #9ff527 0%, #7dd400 100%);
+  color: #2c3e50;
+  padding: 30px;
+  border-radius: 16px;
+  margin-top: 20px;
+}
+
+.correct {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%) !important;
+}
+
+.wrong {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+}
+
+svg {
+  transform: rotate(-90deg);
+}
+
+.segment {
+  stroke: #9ff527;
+  stroke-width: 14;
+  fill: none;
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.statCard {
+  background: #ecf0f1;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.statCard .value {
+  font-size: 32px;
+  font-weight: 900;
+  color: #2c3e50;
+}
+
+.statCard .label {
+  font-size: 14px;
+  color: #7f8c8d;
+  margin-top: 5px;
+}
+
+.restartBtn {
+  margin-top: 20px;
+  padding: 15px 40px;
+  font-size: 24px;
+  height: auto;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+}
+
+.celebration {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #9ff527;
+  animation: confettiFall 3s linear;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.streak {
+  display: inline-block;
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 18px;
+  font-weight: 700;
+  margin-top: 10px;
+  animation: bounceIn 0.5s;
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.dancingAnimal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2000;
+  animation: dance 1s infinite;
+  filter: drop-shadow(0 10px 30px rgba(0,0,0,0.3));
+}
+
+.dancingAnimal img {
+  display: block;
+}
+
+@keyframes dance {
+  0%, 100% { transform: translate(-50%, -50%) rotate(-3deg) scale(1); }
+  25% { transform: translate(-50%, -50%) rotate(3deg) scale(1.05); }
+  50% { transform: translate(-50%, -50%) rotate(-3deg) scale(1); }
+  75% { transform: translate(-50%, -50%) rotate(3deg) scale(1.05); }
+}
+
+</style>
+</head>
+<body>
+
+<div class="celebration" id="celebration"></div>
+
+<div class="container">
+  
+  <div class="header">
+    <h1>🦉 Skoolyst Multiplication Trainer</h1>
+    <p>Practice your times tables and become a math champion!</p>
+  </div>
+
+  <div class="layout">
+
+    <div class="mainArea">
+
+      <div id="question"></div>
+
+      <input id="answer" type="number" readonly />
+
+      <div class="keypad" id="keypad">
+        <button onclick="press(1)">1</button>
+        <button onclick="press(2)">2</button>
+        <button onclick="press(3)">3</button>
+        <button onclick="press(4)">4</button>
+        <button onclick="press(5)">5</button>
+        <button onclick="press(6)">6</button>
+        <button onclick="press(7)">7</button>
+        <button onclick="press(8)">8</button>
+        <button onclick="press(9)">9</button>
+        <button class="action" onclick="deleteDigit()">DEL</button>
+        <button onclick="press(0)">0</button>
+        <button class="action" onclick="submitAnswer()">✓</button>
+      </div>
+
+    </div>
+
+    <div class="rightPanel">
+
+      <div class="timerContainer">
+        <svg id="donut" width="200" height="200" viewBox="0 0 100 100"></svg>
+        <div class="timerNumber" id="timerNumber">6</div>
+      </div>
+
+      <div id="progress">0 / 25</div>
+      
+      <div class="scoreBar">
+        <div class="scoreProgress" id="scoreProgress"></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="result"></div>
+
+</div>
+
+<script>
+let questionTime = 6;
+let timer;
+let segmentTimer;
+let current;
+let score = 0;
+let count = 0;
+let segments = [];
+let streak = 0;
+let maxStreak = 0;
+let wrongAnswers = 0;
+let totalTime = 0;
+let mistakes = []; // Track all mistakes in current session
+let questionsAsked = []; // Track which questions were asked
+let persistentMistakes = []; // Mistakes that persist across sessions
+
+// Sound effects using Web Audio API
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+// Load persistent mistakes from localStorage
+function loadPersistentMistakes() {
+  try {
+    const saved = localStorage.getItem('skoolyst_mistakes');
+    if (saved) {
+      persistentMistakes = JSON.parse(saved);
+    }
+  } catch (e) {
+    console.log('Could not load mistakes');
+  }
+}
+
+// Save persistent mistakes to localStorage
+function savePersistentMistakes() {
+  try {
+    localStorage.setItem('skoolyst_mistakes', JSON.stringify(persistentMistakes));
+  } catch (e) {
+    console.log('Could not save mistakes');
+  }
+}
+
+// Add a mistake to persistent storage
+function addPersistentMistake(a, b) {
+  // Normalize: always store with smaller number first (so 7×8 and 8×7 are the same)
+  const min = Math.min(a, b);
+  const max = Math.max(a, b);
+  
+  // Check if this mistake already exists
+  const exists = persistentMistakes.some(m => m.a === min && m.b === max);
+  if (!exists) {
+    persistentMistakes.push({ a: min, b: max, count: 1 });
+  } else {
+    // Increment count
+    const mistake = persistentMistakes.find(m => m.a === min && m.b === max);
+    mistake.count++;
+  }
+  savePersistentMistakes();
+}
+
+// Remove a mistake from persistent storage when answered correctly
+function removePersistentMistake(a, b) {
+  // Normalize: always check with smaller number first
+  const min = Math.min(a, b);
+  const max = Math.max(a, b);
+  
+  persistentMistakes = persistentMistakes.filter(m => !(m.a === min && m.b === max));
+  savePersistentMistakes();
+}
+
+function playSound(type) {
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  
+  if (type === 'correct') {
+    oscillator.frequency.value = 523.25; // C5
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } else if (type === 'wrong') {
+    oscillator.frequency.value = 200;
+    oscillator.type = 'sawtooth';
+    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.4);
+  } else if (type === 'click') {
+    oscillator.frequency.value = 800;
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+  }
+}
+
+function createConfetti() {
+  const celebration = document.getElementById('celebration');
+  for (let i = 0; i < 50; i++) {
+    const confetti = document.createElement('div');
+    confetti.className = 'confetti';
+    confetti.style.left = Math.random() * 100 + '%';
+    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+    confetti.style.backgroundColor = ['#9ff527', '#3498db', '#e74c3c', '#f39c12', '#9b59b6'][Math.floor(Math.random() * 5)];
+    celebration.appendChild(confetti);
+    
+    setTimeout(() => confetti.remove(), 3000);
+  }
+}
+
+function createDonut() {
+  const svg = document.getElementById("donut");
+  svg.innerHTML = "";
+  segments = [];
+
+  const cx = 50, cy = 50, r = 40;
+  const total = 12;
+
+  for (let i = 0; i < total; i++) {
+    const start = (i / total) * 2 * Math.PI;
+    const end = ((i + 1) / total) * 2 * Math.PI;
+
+    const x1 = cx + r * Math.cos(start);
+    const y1 = cy + r * Math.sin(start);
+    const x2 = cx + r * Math.cos(end);
+    const y2 = cy + r * Math.sin(end);
+
+    const largeArc = 0;
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+    const d = `M ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2}`;
+
+    path.setAttribute("d", d);
+    path.setAttribute("class", "segment");
+
+    svg.appendChild(path);
+    segments.push(path);
+  }
+}
+
+function randomQ() {
+  let a, b;
+  let isRetry = false;
+  
+  // 25% chance to repeat a previous mistake from persistent storage
+  if (persistentMistakes.length > 0 && Math.random() < 0.25) {
+    const mistake = persistentMistakes[Math.floor(Math.random() * persistentMistakes.length)];
+    a = mistake.a;
+    b = mistake.b;
+    isRetry = true;
+  } else {
+    // Generate new random question
+    a = Math.ceil(Math.random() * 12);
+    b = Math.ceil(Math.random() * 12);
+  }
+  
+  // ALWAYS randomly swap a and b (50% chance) - for ALL questions
+  const swap = Math.random() < 0.5;
+  const finalA = swap ? b : a;
+  const finalB = swap ? a : b;
+  
+  return { 
+    a: finalA, 
+    b: finalB, 
+    ans: finalA * finalB, 
+    isRetry: isRetry 
+  };
+}
+
+function newQuestion() {
+  if (count >= 25) {
+    endGame();
+    return;
+  }
+
+  current = randomQ();
+  questionsAsked.push({ 
+    question: `${current.a} × ${current.b}`, 
+    correctAnswer: current.ans,
+    a: current.a,
+    b: current.b
+  });
+  
+  document.getElementById("question").innerText = current.a + " × " + current.b;
+  document.getElementById("progress").innerText = (count + 1) + " / 25";
+  document.getElementById("answer").value = "";
+  
+  const scorePercentage = (score / Math.max(count, 1)) * 100;
+  document.getElementById("scoreProgress").style.width = scorePercentage + "%";
+
+  createDonut();
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(timer);
+  clearInterval(segmentTimer);
+
+  let time = questionTime;
+  let segmentIndex = 0;
+  const startTime = Date.now();
+
+  const timerEl = document.getElementById("timerNumber");
+  timerEl.innerText = time;
+  timerEl.classList.remove('warning');
+
+  segmentTimer = setInterval(() => {
+    if (segmentIndex < segments.length) {
+      segments[segmentIndex].style.opacity = "0.1";
+      segmentIndex++;
+    }
+  }, 500);
+
+  timer = setInterval(() => {
+    time--;
+    timerEl.innerText = time;
+
+    if (time <= 2) {
+      timerEl.classList.add('warning');
+    }
+
+    if (time <= 0) {
+      clearInterval(timer);
+      clearInterval(segmentTimer);
+      totalTime += (Date.now() - startTime) / 1000;
+      // Track timeout as mistake in current session
+      mistakes.push({ a: current.a, b: current.b, ans: current.ans, userAnswer: 'timeout' });
+      questionsAsked[questionsAsked.length - 1].userAnswer = 'Timeout';
+      questionsAsked[questionsAsked.length - 1].correct = false;
+      
+      // Add to persistent mistakes
+      addPersistentMistake(current.a, current.b);
+      
+      feedback(false);
+    }
+
+  }, 1000);
+}
+
+function press(n) {
+  playSound('click');
+  let input = document.getElementById("answer");
+  if (input.value.length < 3) {
+    input.value = input.value + n;
+  }
+}
+
+function deleteDigit() {
+  playSound('click');
+  let input = document.getElementById("answer");
+  input.value = input.value.slice(0, -1);
+}
+
+function submitAnswer() {
+  const input = document.getElementById("answer").value;
+  if (input === '') return;
+  
+  clearInterval(timer);
+  clearInterval(segmentTimer);
+
+  let correct = Number(input) === current.ans;
+
+  if (correct) {
+    score++;
+    streak++;
+    maxStreak = Math.max(maxStreak, streak);
+    playSound('correct');
+    // Mark this question as answered correctly
+    questionsAsked[questionsAsked.length - 1].userAnswer = Number(input);
+    questionsAsked[questionsAsked.length - 1].correct = true;
+    
+    // If this was a retry of a persistent mistake and we got it right, remove it
+    if (current.isRetry) {
+      removePersistentMistake(current.a, current.b);
+    }
+  } else {
+    wrongAnswers++;
+    streak = 0;
+    playSound('wrong');
+    // Track the mistake in current session
+    mistakes.push({ a: current.a, b: current.b, ans: current.ans, userAnswer: Number(input) });
+    questionsAsked[questionsAsked.length - 1].userAnswer = Number(input);
+    questionsAsked[questionsAsked.length - 1].correct = false;
+    
+    // Add to persistent mistakes
+    addPersistentMistake(current.a, current.b);
+  }
+
+  feedback(correct);
+}
+
+function feedback(correct) {
+  const body = document.body;
+
+  if (correct) {
+    body.classList.add("correct");
+  } else {
+    body.classList.add("wrong");
+  }
+
+  setTimeout(() => {
+    body.classList.remove("correct");
+    body.classList.remove("wrong");
+
+    count++;
+    newQuestion();
+  }, 500);
+}
+
+function endGame() {
+  const avgTime = (totalTime / 25).toFixed(1);
+  const accuracy = ((score / 25) * 100).toFixed(0);
+  
+  document.getElementById("question").innerText = "🎉 Finished!";
+  document.getElementById("keypad").style.display = "none";
+  document.getElementById("answer").style.display = "none";
+
+  let performance = "";
+  
+  // Perfect score - show random dancing animal GIF
+  if (score === 25) {
+    performance = "PERFECT! 🌟🌟🌟";
+    createConfetti();
+    showDancingAnimal();
+  } else if (score >= 23) {
+    performance = "Outstanding! 🌟";
+    createConfetti();
+  } else if (score >= 20) {
+    performance = "Excellent! 🎯";
+    createConfetti();
+  } else if (score >= 15) {
+    performance = "Good job! 👍";
+  } else {
+    performance = "Keep practicing! 💪";
+  }
+
+  // Build mistakes review HTML
+  let mistakesHTML = '';
+  if (mistakes.length > 0) {
+    mistakesHTML = `
+      <div style="margin-top: 30px; background: #fff3cd; padding: 20px; border-radius: 12px; border: 2px solid #ffc107;">
+        <h3 style="margin: 0 0 15px 0; color: #856404; font-size: 24px;">📝 Review Your Mistakes (This Session)</h3>
+        <div style="max-height: 300px; overflow-y: auto;">
+          ${mistakes.map((m, i) => `
+            <div style="background: white; padding: 12px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 20px; font-weight: 700;">${m.a} × ${m.b}</span>
+              <div style="text-align: right;">
+                <div style="font-size: 16px; color: #e74c3c;">
+                  ${m.userAnswer === 'timeout' ? '⏰ Timeout' : `Your answer: ${m.userAnswer}`}
+                </div>
+                <div style="font-size: 16px; color: #27ae60; font-weight: 600;">
+                  ✓ Correct: ${m.ans}
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+  
+  // Show persistent mistakes info
+  let persistentHTML = '';
+  if (persistentMistakes.length > 0) {
+    persistentHTML = `
+      <div style="margin-top: 20px; background: #e3f2fd; padding: 15px; border-radius: 12px; border: 2px solid #2196F3;">
+        <div style="color: #1565c0; font-size: 18px; font-weight: 600;">
+          💡 You have ${persistentMistakes.length} question(s) to keep practicing
+        </div>
+        <div style="color: #1976d2; font-size: 14px; margin-top: 5px;">
+          These will appear more often until you get them right!
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById("result").innerHTML = `
+    <div class="finalScore">
+      <h2 style="margin: 0 0 20px 0;">${performance}</h2>
+      <div class="stats">
+        <div class="statCard">
+          <div class="value">${score}/25</div>
+          <div class="label">Correct</div>
+        </div>
+        <div class="statCard">
+          <div class="value">${accuracy}%</div>
+          <div class="label">Accuracy</div>
+        </div>
+        <div class="statCard">
+          <div class="value">${maxStreak}</div>
+          <div class="label">Best Streak</div>
+        </div>
+      </div>
+      ${mistakesHTML}
+      ${persistentHTML}
+      <button class="restartBtn" onclick="restartGame()">Play Again</button>
+    </div>
+  `;
+}
+
+function showDancingAnimal() {
+  // Array of 3D dancing animal GIFs from Tenor/GIPHY
+  const animalGifs = [
+    'https://media.tenor.com/XqF0d6x6OKkAAAAi/dancing-cat.gif',
+    'https://media.tenor.com/cOUW3qFK4h4AAAAi/bear-dancing.gif',
+    'https://media.tenor.com/YaBbVuWIxNgAAAAi/dog-dancing.gif',
+    'https://media.tenor.com/2MJt0B_L_1IAAAAi/dancing-panda.gif',
+    'https://media.tenor.com/kv1IJqQexVYAAAAi/dancing-bunny.gif',
+    'https://media.tenor.com/w-hEh_Z_uUkAAAAi/penguin-dancing.gif',
+    'https://media.tenor.com/9FFWbADLEX8AAAAi/dancing-fox.gif',
+    'https://media.tenor.com/fHIxRRXj5ckAAAAi/lion-dance.gif'
+  ];
+  
+  const randomGif = animalGifs[Math.floor(Math.random() * animalGifs.length)];
+  
+  const animalDiv = document.createElement('div');
+  animalDiv.className = 'dancingAnimal';
+  animalDiv.innerHTML = `<img src="${randomGif}" alt="Dancing animal" style="width: 300px; height: 300px; object-fit: contain;">`;
+  document.body.appendChild(animalDiv);
+  
+  setTimeout(() => {
+    animalDiv.remove();
+  }, 4000);
+}
+
+function restartGame() {
+  score = 0;
+  count = 0;
+  streak = 0;
+  maxStreak = 0;
+  wrongAnswers = 0;
+  totalTime = 0;
+  mistakes = [];
+  questionsAsked = [];
+  
+  document.getElementById("keypad").style.display = "grid";
+  document.getElementById("answer").style.display = "block";
+  document.getElementById("result").innerHTML = "";
+  document.getElementById("scoreProgress").style.width = "0%";
+  
+  newQuestion();
+}
+
+// Keyboard support
+document.addEventListener('keydown', (e) => {
+  if (count >= 25) return;
+  
+  if (e.key >= '0' && e.key <= '9') {
+    press(parseInt(e.key));
+  } else if (e.key === 'Backspace') {
+    e.preventDefault();
+    deleteDigit();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    submitAnswer();
+  }
+});
+
+// Start the game
+loadPersistentMistakes();
+newQuestion();
+</script>
+
+</body>
+</html>
